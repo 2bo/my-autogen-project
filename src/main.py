@@ -2,9 +2,10 @@ import asyncio
 import os
 
 from autogen_agentchat.agents import AssistantAgent
-# from autogen_agentchat.conditions import TextMentionTermination
-from autogen_agentchat.conditions import MaxMessageTermination
-from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_agentchat.conditions import MaxMessageTermination, TextMentionTermination
+
+# from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.ui import Console
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
@@ -22,16 +23,21 @@ async def main() -> None:
     pdm_agent = AssistantAgent(
         name="PDM_Agent",
         model_client=model_client,
-        description="プロダクトの成長・事業の成功・売上目標達成、プロダクトビジョンを実現するための立案をします",
-        system_message="プロダクトのバックエンド、フロントエンド、デザイナーエージェントにタスクを割り振ってください。",
+        description="プロダクトマネージャーです。プロダクトの成長・事業の成功・売上目標達成、プロダクトビジョンを実現するための立案をします",
+        system_message=(
+            "あなたはPdMエージェントです。ユーザーからのタスク依頼を最初に受け取ります"
+            "自分自身ではエンジニアやデザインに関する選定をしないで、他のエージェントに依頼するようにしてください"
+            "必要に応じて、バックエンドエンジニア、フロントエンドエンジニア、デザイナーの各エージェントにタスクを依頼してください"
+            "最後にタスクを終了する責任を持っています。依頼が最終的な結果を出力してください"
+        ),
     )
 
     # バックエンドエージェント
     backend_agent = AssistantAgent(
         name="Backend_Agent",
         model_client=model_client,
-        description="Webシステムのサーバーサイドを設計、実装します",
-        system_message="バックエンドエンジニアのテックリードとして技術選定と設計をしてください"
+        description="バックエンドエンジニアです。Webシステムのサーバーサイドを設計、実装します",
+        system_message="バックエンドエンジニアのテックリードとして技術選定と設計をしてください",
     )
 
     # フロントエンドエージェント
@@ -39,32 +45,36 @@ async def main() -> None:
         name="Frontend_Agent",
         model_client=model_client,
         description="Webシステムのユーザーインターフェースを設計、構築します",
-        system_message="フロントエンドエンジニアのテックリードとして技術選定と設計をしてください"
+        system_message="フロントエンドエンジニアのテックリードとして技術選定と設計をしてください",
     )
 
     # デザイナーエージェント
     designer_agent = AssistantAgent(
         name="Designer_Agent",
         model_client=model_client,
-        description="デザイナーとしてユーザーに価値を届けるための戦略立案および実行をします",
+        description="デザイナーです。デザインでユーザーに価値を届けるための戦略立案および実行をします",
         system_message="シニアデザイナーとしてデザインおよび、UIやUXのガイドラインを策定してください",
     )
     # タスク終了条件
-    # termination = TextMentionTermination("TERMINATE")
-    max_message_termination = MaxMessageTermination(max_messages=12)  # 12回のメッセージで終了
+    termination = MaxMessageTermination(
+        max_messages=12
+    )
 
     # チームの定義
-    agent_team = RoundRobinGroupChat(
+    agent_team = SelectorGroupChat(
         [pdm_agent, backend_agent, frontend_agent, designer_agent],
-        termination_condition=max_message_termination,
+        model_client=model_client,
+        termination_condition=termination,
     )
 
     # タスクの実行
-    stream = agent_team.run_stream(task="""
-                                   「フリーランスエンジニアの安心と挑戦をサポートし、キャリアの可能性を拡げる」を実現するためのプロダクト企画書を作成してください。
-                                    作成するプロダクト内容、技術選定、概要設計、デザインおよびUI/UXのガイドラインを内容に含めてください。
-                                    Markdownのフォーマットで出力してください。
-                                   """)
+    stream = agent_team.run_stream(
+        task="""
+            「フリーランスエンジニアの安心と挑戦をサポートし、キャリアの可能性を拡げる」を実現するためのプロダクト企画書を作成してください。
+             作成するプロダクト内容、技術選定、概要設計、デザインおよびUI/UXのガイドラインを内容に含めてください。
+             Markdownのフォーマットで出力してください。
+             """
+    )
     await Console(stream)
 
 
