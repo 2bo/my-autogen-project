@@ -5,12 +5,19 @@
   "context": "..",
   "settings": {
     "python.defaultInterpreterPath": "/usr/local/bin/python",
-    "terminal.integrated.defaultProfile.linux": "bash"
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
   },
   "extensions": [
     "ms-python.python",
     "ms-python.vscode-pylance",
-    "ms-toolsai.jupyter"
+    "ms-toolsai.jupyter",
+    "charliermarsh.ruff"
   ],
   "postCreateCommand": "pip install -r requirements.txt",
   "remoteUser": "vscode"
