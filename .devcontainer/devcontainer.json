@@ -30,5 +30,8 @@
       "label": "AutoGen Studio",
       "onAutoForward": "openBrowser"
     }
-  }
+  },
+  "mounts": [
+    "source=./data,target=/workspace/data,type=bind"
+  ]
 }

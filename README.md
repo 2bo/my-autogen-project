@@ -22,8 +22,8 @@
 
 devcontainerのターミナルで以下を実行します
 
-```bash
-$ autogenstudio ui --host 0.0.0.0 --port 8080
+```sh
+$ autogenstudio ui --host 0.0.0.0 --port 8080 --appdir /workspace/data
 ```
 
 ブラウザで`http://localhost:8080`を開きます
