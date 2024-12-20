@@ -22,7 +22,7 @@ $ autogenstudio ui --host 0.0.0.0 --port 8080 --appdir /workspace/data
 
 ブラウザで`http://localhost:8080`を開きます
 
-## Augogenの実行
+## Autogenの実行
 
 OPENAI APIのキーを発行します。
 .envファイルを作成し、OPENAI_API_KEYに発行したキーを設定します
